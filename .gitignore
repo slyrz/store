@@ -1,0 +1,11 @@
+*.bkp
+*.log
+*.o
+*~
+*.cmi
+*.cmo
+*.cma
+*.so
+*.a
+
+store
