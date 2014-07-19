@@ -41,8 +41,18 @@ let extension str =
   | Not_found -> ""
 ;;
 
+(* List all paths in a directory. *)
+let list_path path =
+  let readdir dir = Sys.readdir dir |> Array.to_list |> List.map (Filename.concat dir) in
+  let rec list_path = function
+    | path::tail -> (if Sys.is_directory path then readdir path |> list_path else [path]) @ (list_path tail)
+    | [] -> []
+  in
+    list_path [path]
+;;
+
 (* Create a directory and make parent directories as needed. *)
-let mkdir path =
+let make_path path =
   let rec ascend base = function
     | head::tail ->
         let part = Filename.concat base head in
@@ -115,24 +125,38 @@ let renamers =
     (test_music_file, name_music_file);
   ]
 
-let perform_rename old_name new_name =
-  Printf.printf "%s -> %s\n" old_name new_name
-  (* TODO *)
-;;
-
-let rename path =
-  let rec rename path renamers =
-    match renamers with
+(* Returns a tuple of (old name, new name). *)
+let get_change path =
+  let rec rename path = function
     | (test,name)::tail -> if test path
-      then name path |> perform_rename path
+      then (path, name path)
       else rename path tail
-    | [] -> ()
+    | [] -> (path, path)
   in
     rename path renamers
 ;;
 
+let handle_argument path =
+  let validate (src,dst) =
+    Printf.printf ">>> %s -> %s\n" src dst;
+    if (Sys.file_exists dst) then
+      failwith (dst ^ " exists.");
+  in
+  let perform (src,dst) =
+    Filename.dirname dst |> make_path;
+    Sys.rename src dst;
+  in
+  let name_changes = function
+    | (x,y) -> x<>y
+  in
+  let changes = list_path path |> List.map get_change |> List.filter name_changes in
+    List.iter validate changes;
+    if not (!pretend) then
+      List.iter perform changes;
+;;
+
 let main () =
-  Arg.parse speclist rename "store [-pretend|help]... FILE...";
+  Arg.parse speclist handle_argument "store [-pretend|help]... FILE...";
 ;;
 
 main ();
