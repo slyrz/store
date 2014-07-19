@@ -41,9 +41,6 @@ let extension str =
   | Not_found -> ""
 ;;
 
-(* Join a list of path components. *)
-let path_join = List.fold_left Filename.concat "";;
-
 (* Create a directory and make parent directories as needed. *)
 let mkdir path =
   let rec ascend base = function
