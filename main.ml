@@ -135,7 +135,7 @@ let rename path =
 ;;
 
 let main () =
-  Arg.parse speclist rename "tidy [-(pretend|help)]... FILE...";
+  Arg.parse speclist rename "store [-pretend|help]... FILE...";
 ;;
 
 main ();
