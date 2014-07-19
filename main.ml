@@ -76,17 +76,6 @@ let int_of_track track =
     failwith "not a number"
 ;;
 
-(* Used to match the first number in a string. *)
-let regex = Str.regexp "\\([0-9]+\\)"
-
-(* Convert a track string ("1" or something like "1/13") to int. *)
-let int_of_track track =
-  if (Str.string_match regex track 0) then
-    Str.matched_group 0 track |> int_of_string
-  else
-    failwith "not a number"
-;;
-
 let test_font_file path =
   extension path =>> [ ".ttf"; ".otf"; ]
 ;;
