@@ -2,8 +2,10 @@ PREFIX?=/usr
 OCAMLC?=ocamlc
 OCAMLMKLIB?=ocamlmklib
 
-BINDCC=`pkg-config --cflags freetype2 libavformat libavutil | sed "s/\-I/\-I /g"`
-BINDLD=`pkg-config --libs freetype2 libavformat libavutil`
+PACKAGES=freetype2 libavformat libavutil
+
+CFLAGS=`pkg-config --cflags ${PACKAGES} | sed "s/\-I/\-I /g"`
+LDFLAGS=`pkg-config --libs ${PACKAGES}`
 
 all: store
 
@@ -14,10 +16,10 @@ store: meta.cmo main.cmo meta.so
 	$(OCAMLC) -c unix.cma str.cma $<
 
 %.o: %.c
-	$(OCAMLC) $(BINDCC) -c $<
+	$(OCAMLC) $(CFLAGS) -c $<
 
 %.so: %.o
-	$(OCAMLMKLIB) $(BINDLD) -o $(<:.o=) $<; mv dll$@ $@
+	$(OCAMLMKLIB) $(LDFLAGS) -o $(<:.o=) $<; mv dll$@ $@
 
 install: store
 	install -d "${DESTDIR}${PREFIX}/bin"
