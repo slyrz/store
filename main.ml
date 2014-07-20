@@ -114,7 +114,7 @@ let renamers =
     (test_music_file, name_music_file);
   ]
 
-(* Returns a tuple of (old name, new name). *)
+(* Returns a tuple of (old name, new name) strings. *)
 let get_change path =
   let rec rename path = function
     | (test,name)::tail -> if test path
@@ -125,16 +125,20 @@ let get_change path =
     rename path renamers
 ;;
 
+(* Handles all command line arguments. *)
 let handle_argument path =
+  (* Make sure destination does not exists. *)
   let validate (src,dst) =
     Printf.printf ">>> %s -> %s\n" src dst;
     if (Sys.file_exists dst) then
       failwith (dst ^ " exists.");
   in
+  (* Move src to dst and create directories as needed. *)
   let perform (src,dst) =
     Filename.dirname dst |> make_path;
     Sys.rename src dst;
   in
+  (* Ignore already correctly named files. *)
   let name_changes = function
     | (x,y) -> x<>y
   in
