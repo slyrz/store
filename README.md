@@ -1,14 +1,15 @@
 # store
 
-Small program used to organize the files in my home directory. Currently
-supports:
+Small program used to organize the files in my home directory.
+
+## Supported File Types
 
 * Fonts  
-will be copied to `.fonts/$family/$family-$weight.$ext` where the base name
-has all spaces removed.
+will be moved to `.fonts/$family/$family-$weight.$ext`  
+with all spaces removed from base name.
 
 * Music  
-will be copied to `Music/$artist/$album/$track $title.$ext`
+will be moved to `Music/$artist/$album/$track $title.$ext`
 
 ## Requirements
 
