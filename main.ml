@@ -127,7 +127,7 @@ let get_change path =
 
 (* Handles all command line arguments. *)
 let handle_argument path =
-  (* Make sure destination does not exists. *)
+  (* Make sure we don't override existing files. *)
   let validate (src,dst) =
     Printf.printf ">>> %s -> %s\n" src dst;
     if (Sys.file_exists dst) then
@@ -138,9 +138,9 @@ let handle_argument path =
     Filename.dirname dst |> make_path;
     Sys.rename src dst;
   in
-  (* Ignore already correctly named files. *)
+  (* Used to ignore already correctly named files. *)
   let name_changes = function
-    | (x,y) -> x<>y
+    | (src,dst) -> src<>dst
   in
   let changes = list_path path |> List.map get_change |> List.filter name_changes in
     List.iter validate changes;
@@ -149,7 +149,7 @@ let handle_argument path =
 ;;
 
 let main () =
-  Arg.parse speclist handle_argument "store [-pretend|help]... FILE...";
+  Arg.parse speclist handle_argument "store [-pretend|help]... PATH...";
 ;;
 
 main ();
