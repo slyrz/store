@@ -36,7 +36,7 @@ let extension str =
   try
     let len = String.length str in
     let pos = String.rindex str '.' in
-      String.sub str pos (len-pos)
+      String.sub str pos (len-pos) |> String.lowercase
   with
   | Not_found -> ""
 ;;
