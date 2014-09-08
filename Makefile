@@ -13,13 +13,13 @@ LDFLAGS=`pkg-config --libs ${PACKAGES}`
 
 all: store
 
-store: meta.so
+store: libmeta.a
 	$(OCAMLC) $(VERBOSE) -o $@ $(MODULES) $(SOURCES) -ccopt "-L." -cclib "$(LDFLAGS) -lmeta"
 
 %.o: %.c
 	$(OCAMLC) $(VERBOSE) -ccopt "$(CFLAGS) -fPIC" -c $<
 
-%.so: %.o
+lib%.a: %.o
 	$(OCAMLMKLIB) $(VERBOSE) -o $(<:.o=) $<
 
 install: store
