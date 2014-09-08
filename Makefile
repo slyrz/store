@@ -1,30 +1,31 @@
 PREFIX?=/usr
-OCAMLC?=ocamlc
+OCAMLC?=ocamlopt
 OCAMLMKLIB?=ocamlmklib
 
+VERBOSE=-verbose
+
+SOURCES=meta.ml main.ml
+MODULES=unix.cmxa str.cmxa
 PACKAGES=freetype2 libavformat libavutil
 
-CFLAGS=`pkg-config --cflags ${PACKAGES} | sed "s/\-I/\-I /g"`
+CFLAGS=`pkg-config --cflags ${PACKAGES}`
 LDFLAGS=`pkg-config --libs ${PACKAGES}`
 
 all: store
 
-store: meta.cmo main.cmo meta.so
-	$(OCAMLC) -o $@ unix.cma str.cma meta.cmo main.cmo -dllib ./meta.so
-
-%.cmo: %.ml
-	$(OCAMLC) -c unix.cma str.cma $<
+store: meta.so
+	$(OCAMLC) $(VERBOSE) -o $@ $(MODULES) $(SOURCES) -ccopt "-L." -cclib "$(LDFLAGS) -lmeta"
 
 %.o: %.c
-	$(OCAMLC) $(CFLAGS) -c $<
+	$(OCAMLC) $(VERBOSE) -ccopt "$(CFLAGS) -fPIC" -c $<
 
 %.so: %.o
-	$(OCAMLMKLIB) $(LDFLAGS) -o $(<:.o=) $<; mv dll$@ $@
+	$(OCAMLMKLIB) $(VERBOSE) -o $(<:.o=) $<
 
 install: store
 	install -d "${DESTDIR}${PREFIX}/bin"
 	install -t "${DESTDIR}${PREFIX}/bin" $<
 
 clean:
-	rm -rf *.so *.o *.a *.cmo *.cmi *.cma
+	rm -rf *.so *.o *.a *.cmi *.cmx
 	rm -rf store
