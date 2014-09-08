@@ -13,7 +13,7 @@ LDFLAGS=`pkg-config --libs ${PACKAGES}`
 
 all: store
 
-store: libmeta.a
+store: $(SOURCES) libmeta.a
 	$(OCAMLC) $(VERBOSE) -o $@ $(MODULES) $(SOURCES) -ccopt "-L." -cclib "$(LDFLAGS) -lmeta"
 
 %.o: %.c
