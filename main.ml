@@ -76,6 +76,11 @@ let int_of_track track =
     failwith "not a number"
 ;;
 
+(* Variables set by command line flags. *)
+let font_directory = ref (home </> ".fonts")
+let music_directory = ref (home </> "Music")
+let pretend = ref false
+
 let test_font_file path =
   extension path =>> [ ".ttf"; ".otf"; ]
 ;;
@@ -86,7 +91,7 @@ let name_font_file path =
   in
   let inf = Meta.font_info path in
   let ext = extension path in
-    home </> ".fonts" </> inf.Meta.family </> (Printf.sprintf "%s-%s%s" (title_join inf.Meta.family) (title_join inf.Meta.style) ext)
+    !font_directory </> inf.Meta.family </> (Printf.sprintf "%s-%s%s" (title_join inf.Meta.family) (title_join inf.Meta.style) ext)
 ;;
 
 let test_music_file path =
@@ -96,14 +101,14 @@ let test_music_file path =
 let name_music_file path =
   let inf = Meta.music_info path in
   let ext = extension path in
-    home </> "Music" </> inf.Meta.artist </> inf.Meta.album </> (Printf.sprintf "%02d %s%s" (int_of_track inf.Meta.track) inf.Meta.title ext)
+    !music_directory </> inf.Meta.artist </> inf.Meta.album </> (Printf.sprintf "%02d %s%s" (int_of_track inf.Meta.track) inf.Meta.title ext)
 ;;
-
-let pretend = ref false
 
 (* Command line options. *)
 let speclist =
   [
+    ("-font-directory", Arg.Set_string font_directory, "Target directory for font files.");
+    ("-music-directory", Arg.Set_string music_directory, "Target directory for music files.");
     ("-pretend", Arg.Set pretend, "Don't perform any changes");
   ]
 
@@ -149,7 +154,7 @@ let handle_argument path =
 ;;
 
 let main () =
-  Arg.parse speclist handle_argument "store [-pretend|help]... PATH...";
+  Arg.parse speclist handle_argument "store [OPTION]... PATH...";
 ;;
 
 main ();
