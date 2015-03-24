@@ -95,6 +95,11 @@ let int_of_track track =
     failwith "not a number"
 ;;
 
+(* Remove '/' from filenames. *)
+let sanitize filename =
+  Str.global_replace (Str.regexp "\ */\ *") " - " filename
+;;
+
 (* Variables set by command line flags. *)
 let font_directory = ref (home </> ".fonts")
 let music_directory = ref (home </> "Music")
@@ -110,7 +115,9 @@ let name_font_file path =
   in
   let inf = Meta.font_info path in
   let ext = extension path in
-    !font_directory </> inf.Meta.family </> (Printf.sprintf "%s-%s%s" (title_join inf.Meta.family) (title_join inf.Meta.style) ext)
+  let filepath = !font_directory </> inf.Meta.family in
+  let filename = Printf.sprintf "%s-%s%s" (title_join inf.Meta.family) (title_join inf.Meta.style) ext in
+    filepath </> (sanitize filename)
 ;;
 
 let test_music_file path =
@@ -120,7 +127,9 @@ let test_music_file path =
 let name_music_file path =
   let inf = Meta.music_info path in
   let ext = extension path in
-    !music_directory </> inf.Meta.artist </> inf.Meta.album </> (Printf.sprintf "%02d %s%s" (int_of_track inf.Meta.track) inf.Meta.title ext)
+  let filepath = !music_directory </> inf.Meta.artist </> inf.Meta.album in
+  let filename = Printf.sprintf "%02d %s%s" (int_of_track inf.Meta.track) inf.Meta.title ext in
+    filepath </> (sanitize filename)
 ;;
 
 (* Command line options. *)
