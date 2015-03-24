@@ -43,7 +43,7 @@ let extension str =
 
 (* List all paths in a directory. *)
 let list_path path =
-  let readdir dir = Sys.readdir dir |> Array.to_list |> List.map (Filename.concat dir) in
+  let readdir dir = Sys.readdir dir |> Array.to_list |> List.filter (fun n -> n.[0] <> '.') |> List.map (Filename.concat dir) in
   let rec list_path = function
     | path::tail -> (if Sys.is_directory path then readdir path |> list_path else [path]) @ (list_path tail)
     | [] -> []
