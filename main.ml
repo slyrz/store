@@ -1,3 +1,5 @@
+open Unix
+
 let (=>>) = List.mem
 let (</>) = Filename.concat
 
@@ -65,6 +67,23 @@ let make_path path =
     split path '/' |> ascend base
 ;;
 
+let buffer_size = 8192
+let buffer = String.create buffer_size
+
+(* Copy file. Used when renaming failes due to invalid cross-device links. *)
+let copy inp out =
+  let fdi = openfile inp [O_RDONLY] 0 in
+  let fdo = openfile out [O_WRONLY; O_CREAT; O_TRUNC] 0o666 in
+  let rec copy () =
+    match read fdi buffer 0 buffer_size with
+    | 0 -> ()
+    | r -> ignore (write fdo buffer 0 r); copy ()
+  in
+    copy ();
+    close fdi;
+    close fdo;
+;;
+
 (* Used to match the first number in a string. *)
 let regex = Str.regexp "\\([0-9]+\\)"
 
@@ -123,7 +142,11 @@ let renamers =
 let get_change path =
   let rec rename path = function
     | (test,name)::tail -> if test path
-      then (path, name path)
+      then
+        try
+          (path, name path)
+        with
+        | _ -> (path, path)
       else rename path tail
     | [] -> (path, path)
   in
@@ -133,22 +156,28 @@ let get_change path =
 (* Handles all command line arguments. *)
 let handle_argument path =
   (* Make sure we don't override existing files. *)
-  let validate (src,dst) =
-    Printf.printf ">>> %s -> %s\n" src dst;
-    if (Sys.file_exists dst) then
-      failwith (dst ^ " exists.");
+  let print_changes (src,dst) =
+    Printf.printf "%s\t%s\n" src dst;
   in
   (* Move src to dst and create directories as needed. *)
   let perform (src,dst) =
-    Filename.dirname dst |> make_path;
-    Sys.rename src dst;
+    let dir = Filename.dirname dst in
+      if not (Sys.file_exists dir) then make_path dir;
+      try
+        Sys.rename src dst;
+      with
+      | Sys_error _ -> copy src dst;
+  in
+  let destination_extists = function
+    | (src,dst) -> not (Sys.file_exists dst)
   in
   (* Used to ignore already correctly named files. *)
   let name_changes = function
     | (src,dst) -> src<>dst
   in
-  let changes = list_path path |> List.map get_change |> List.filter name_changes in
-    List.iter validate changes;
+  let paths = list_path path in
+  let changes = List.map get_change paths |> List.filter name_changes |> List.filter destination_extists in
+    List.iter print_changes changes;
     if not (!pretend) then
       List.iter perform changes;
 ;;
