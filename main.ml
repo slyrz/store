@@ -13,10 +13,10 @@ let explode s =
 let implode l =
   let rec imp i s = function
     | [] -> s
-    | chr :: rem -> s.[i] <- chr; imp (i+1) s rem
+    | chr :: rem -> Bytes.set s i chr; imp (i+1) s rem
   in
   let n = List.length l in
-    imp 0 (String.create n) l
+    imp 0 (Bytes.create n) l
 ;;
 
 (* Split a string at every occurrence of the delimiter char. *)
@@ -68,7 +68,7 @@ let make_path path =
 ;;
 
 let buffer_size = 8192
-let buffer = String.create buffer_size
+let buffer = Bytes.create buffer_size
 
 (* Copy file. Used when renaming failes due to invalid cross-device links. *)
 let copy inp out =
